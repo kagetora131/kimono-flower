@@ -192,7 +192,9 @@ export function buildVerdict(motifIds: string[], targetMonth: Month): Verdict | 
     headline = '季節をまたぐ取り合わせです'
     detail = `${each}は着どきが重なりません。ただし着物には、桜と楓を組み合わせた「桜楓」のように、あえて季節をまたいで取り合わせた意匠があり、これらは季節を問わず着られるものとして扱われます。ひとつの絵柄としてまとまっているなら通年の柄、別々の柄が並んでいるだけなら、それぞれの時季に合わせて選ぶとよいでしょう。`
   } else if (seasonalProfiles.length === 0) {
-    detail = `${names}はいずれも季節を選ばない文様です。${targetMonth}月に限らず、一年を通して着られます。`
+    // 「いずれも」は柄が複数あるときだけ付ける。単独の柄に使うと日本語として不自然になる。
+    const all = motifs.length > 1 ? 'はいずれも' : 'は'
+    detail = `${names}${all}季節を選ばない文様です。${targetMonth}月に限らず、一年を通して着られます。`
   } else if (targetFitness === 'best') {
     detail = `${targetMonth}月は${names}が最も映える時季です。着物の柄は実際の盛りより少し早く着るのが粋とされ、今がちょうどその頃合いにあたります。`
   } else if (targetFitness === 'good') {
