@@ -1,0 +1,710 @@
+/* ─────────────────────────────────────────────
+   花あわせ — やわらかい和モダンのデザイントークン
+   生成り(kinari)の地に、墨・藍・臙脂・金茶を差す。
+   ───────────────────────────────────────────── */
+
+:root {
+  --kinari: #f6f2ea;
+  --paper: #fffdf8;
+  --paper-sub: #f1ebe0;
+  --sumi: #2b2926;
+  --sumi-soft: #57514a;
+  --muted: #8b8377;
+  --rule: #e4dbcb;
+  --rule-strong: #cfc3ae;
+
+  --ai: #3e648c; /* 藍 */
+  --ai-weak: #e4ecf4;
+  --enji: #9b4a52; /* 臙脂 */
+  --enji-weak: #f5e7e7;
+  --kincha: #b08234; /* 金茶 */
+  --kincha-weak: #f7edda;
+  --wakakusa: #5e8a55; /* 若草 */
+  --wakakusa-weak: #e6eee2;
+
+  --fit-best: var(--wakakusa);
+  --fit-best-bg: var(--wakakusa-weak);
+  --fit-good: var(--ai);
+  --fit-good-bg: var(--ai-weak);
+  --fit-caution: var(--kincha);
+  --fit-caution-bg: var(--kincha-weak);
+  --fit-avoid: #a1968a;
+  --fit-avoid-bg: #efeae2;
+
+  --mincho: 'Shippori Mincho', 'Hiragino Mincho ProN', 'Yu Mincho', serif;
+  --gothic: 'Zen Kaku Gothic New', 'Hiragino Sans', 'Yu Gothic', sans-serif;
+
+  --radius: 14px;
+  --shadow: 0 1px 2px rgba(43, 41, 38, 0.05), 0 8px 24px rgba(43, 41, 38, 0.06);
+  --shadow-sm: 0 1px 2px rgba(43, 41, 38, 0.06);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  background: var(--kinari);
+  color: var(--sumi);
+  font-family: var(--gothic);
+  font-size: 15px;
+  line-height: 1.85;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+button {
+  font-family: inherit;
+  font-size: inherit;
+  cursor: pointer;
+}
+
+/* ── レイアウト ── */
+
+.app {
+  max-width: 760px;
+  margin: 0 auto;
+  padding: 0 20px 96px;
+}
+
+.masthead {
+  padding: 44px 0 28px;
+  text-align: center;
+}
+
+.masthead__title {
+  font-family: var(--mincho);
+  font-size: clamp(30px, 7vw, 40px);
+  font-weight: 600;
+  letter-spacing: 0.22em;
+  margin: 0 0 10px;
+  text-indent: 0.22em;
+}
+
+.masthead__lead {
+  margin: 0;
+  color: var(--sumi-soft);
+  font-size: 14px;
+  letter-spacing: 0.04em;
+}
+
+.masthead__rule {
+  width: 44px;
+  height: 1px;
+  background: var(--rule-strong);
+  margin: 22px auto 0;
+}
+
+.panel {
+  background: var(--paper);
+  border: 1px solid var(--rule);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  padding: 24px;
+  margin-bottom: 20px;
+}
+
+.panel__title {
+  font-family: var(--mincho);
+  font-size: 17px;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  margin: 0 0 4px;
+}
+
+.panel__note {
+  margin: 0 0 18px;
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.75;
+}
+
+/* ── ボタン ── */
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 13px 22px;
+  border-radius: 999px;
+  border: 1px solid transparent;
+  font-weight: 500;
+  letter-spacing: 0.08em;
+  transition: background-color 0.18s ease, border-color 0.18s ease, color 0.18s ease;
+}
+
+.btn--primary {
+  background: var(--sumi);
+  color: var(--paper);
+}
+.btn--primary:hover:not(:disabled) {
+  background: #423d37;
+}
+
+.btn--accent {
+  background: var(--enji);
+  color: #fff;
+}
+.btn--accent:hover:not(:disabled) {
+  background: #863f47;
+}
+
+.btn--quiet {
+  background: transparent;
+  color: var(--sumi-soft);
+  border-color: var(--rule-strong);
+}
+.btn--quiet:hover:not(:disabled) {
+  border-color: var(--sumi-soft);
+  color: var(--sumi);
+}
+
+.btn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.btn-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+/* ── 画像選択 ── */
+
+.dropzone {
+  border: 1px dashed var(--rule-strong);
+  border-radius: var(--radius);
+  background: var(--paper-sub);
+  padding: 36px 20px;
+  text-align: center;
+  color: var(--muted);
+  font-size: 13.5px;
+}
+
+.dropzone--active {
+  border-color: var(--ai);
+  background: var(--ai-weak);
+  color: var(--ai);
+}
+
+.preview {
+  position: relative;
+  border-radius: var(--radius);
+  overflow: hidden;
+  background: var(--paper-sub);
+  border: 1px solid var(--rule);
+}
+
+.preview img {
+  display: block;
+  width: 100%;
+  max-height: 420px;
+  object-fit: contain;
+}
+
+.hidden-input {
+  display: none;
+}
+
+/* ── 進捗 ── */
+
+.progress {
+  height: 5px;
+  border-radius: 999px;
+  background: var(--paper-sub);
+  overflow: hidden;
+  margin: 14px 0 8px;
+}
+
+.progress__bar {
+  height: 100%;
+  background: var(--ai);
+  transition: width 0.25s ease;
+}
+
+.progress__label {
+  font-size: 12.5px;
+  color: var(--muted);
+  font-variant-numeric: tabular-nums;
+}
+
+/* ── 候補リスト ── */
+
+.candidates {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.candidate {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  width: 100%;
+  text-align: left;
+  padding: 12px 16px;
+  border-radius: 10px;
+  border: 1px solid var(--rule);
+  background: var(--paper);
+  transition: border-color 0.16s ease, background-color 0.16s ease;
+}
+
+.candidate:hover {
+  border-color: var(--rule-strong);
+}
+
+.candidate--on {
+  border-color: var(--ai);
+  background: var(--ai-weak);
+}
+
+.candidate__check {
+  width: 18px;
+  height: 18px;
+  flex: none;
+  border-radius: 4px;
+  border: 1px solid var(--rule-strong);
+  background: var(--paper);
+  display: grid;
+  place-items: center;
+  font-size: 11px;
+  color: transparent;
+}
+
+.candidate--on .candidate__check {
+  background: var(--ai);
+  border-color: var(--ai);
+  color: #fff;
+}
+
+.candidate__body {
+  flex: 1;
+  min-width: 0;
+}
+
+.candidate__name {
+  font-family: var(--mincho);
+  font-size: 16px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+}
+
+.candidate__reading {
+  font-size: 11.5px;
+  color: var(--muted);
+  margin-left: 8px;
+  letter-spacing: 0.06em;
+}
+
+.candidate__season {
+  font-size: 12.5px;
+  color: var(--sumi-soft);
+}
+
+.candidate__score {
+  flex: none;
+  width: 62px;
+}
+
+.candidate__bar {
+  height: 4px;
+  border-radius: 999px;
+  background: var(--paper-sub);
+  overflow: hidden;
+}
+
+.candidate__bar > span {
+  display: block;
+  height: 100%;
+  background: var(--kincha);
+}
+
+/* ── 確信度バッジ ── */
+
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 3px 11px;
+  border-radius: 999px;
+  font-size: 12px;
+  letter-spacing: 0.06em;
+  line-height: 1.7;
+}
+
+.badge--high {
+  background: var(--wakakusa-weak);
+  color: var(--wakakusa);
+}
+.badge--medium {
+  background: var(--kincha-weak);
+  color: var(--kincha);
+}
+.badge--low {
+  background: var(--fit-avoid-bg);
+  color: #7d7368;
+}
+.badge--cat {
+  background: var(--paper-sub);
+  color: var(--sumi-soft);
+}
+
+/* ── 判定結果 ── */
+
+.verdict {
+  text-align: center;
+  padding: 30px 24px 26px;
+  border-radius: var(--radius);
+  border: 1px solid var(--rule);
+  box-shadow: var(--shadow);
+  margin-bottom: 20px;
+}
+
+.verdict--best {
+  background: var(--fit-best-bg);
+  border-color: #cbdcc3;
+}
+.verdict--good {
+  background: var(--fit-good-bg);
+  border-color: #cddcea;
+}
+.verdict--caution {
+  background: var(--fit-caution-bg);
+  border-color: #e8d8b3;
+}
+.verdict--avoid {
+  background: var(--fit-avoid-bg);
+  border-color: #ddd4c8;
+}
+
+.verdict__month {
+  font-size: 12.5px;
+  letter-spacing: 0.18em;
+  color: var(--sumi-soft);
+  margin: 0 0 6px;
+}
+
+.verdict__headline {
+  font-family: var(--mincho);
+  font-size: clamp(22px, 5.6vw, 28px);
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  margin: 0 0 14px;
+}
+
+.verdict__detail {
+  margin: 0 auto;
+  max-width: 34em;
+  font-size: 14px;
+  line-height: 1.95;
+  color: var(--sumi-soft);
+  text-align: left;
+}
+
+/* ── 12か月ヒートマップ ── */
+
+.heatmap {
+  display: grid;
+  grid-template-columns: repeat(12, 1fr);
+  gap: 4px;
+}
+
+.heatcell {
+  border: none;
+  padding: 10px 0 9px;
+  border-radius: 8px;
+  text-align: center;
+  background: var(--paper-sub);
+  color: var(--muted);
+  line-height: 1.35;
+  transition: transform 0.14s ease, box-shadow 0.14s ease;
+}
+
+.heatcell:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-sm);
+}
+
+.heatcell--best {
+  background: var(--fit-best-bg);
+  color: var(--fit-best);
+}
+.heatcell--good {
+  background: var(--fit-good-bg);
+  color: var(--fit-good);
+}
+.heatcell--caution {
+  background: var(--fit-caution-bg);
+  color: var(--fit-caution);
+}
+.heatcell--avoid {
+  background: var(--fit-avoid-bg);
+  color: var(--fit-avoid);
+}
+
+.heatcell--target {
+  outline: 2px solid var(--sumi);
+  outline-offset: 1px;
+}
+
+.heatcell__month {
+  display: block;
+  font-size: 12px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+.heatcell__mark {
+  display: block;
+  font-size: 13px;
+}
+
+.legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 16px;
+  margin-top: 14px;
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.legend__item {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.legend__swatch {
+  width: 11px;
+  height: 11px;
+  border-radius: 3px;
+}
+
+/* ── 文様カード ── */
+
+.motif-card {
+  border: 1px solid var(--rule);
+  border-radius: var(--radius);
+  background: var(--paper);
+  box-shadow: var(--shadow-sm);
+  padding: 20px 22px;
+  margin-bottom: 14px;
+}
+
+.motif-card__head {
+  display: flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: 8px 12px;
+  margin-bottom: 4px;
+}
+
+.motif-card__name {
+  font-family: var(--mincho);
+  font-size: 21px;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  margin: 0;
+}
+
+.motif-card__en {
+  font-size: 12px;
+  color: var(--muted);
+  letter-spacing: 0.1em;
+}
+
+.motif-card__season {
+  font-size: 13px;
+  color: var(--enji);
+  letter-spacing: 0.06em;
+  margin-bottom: 14px;
+}
+
+.motif-card dl {
+  margin: 0;
+}
+
+.motif-card dt {
+  font-size: 11.5px;
+  letter-spacing: 0.14em;
+  color: var(--muted);
+  margin-top: 14px;
+}
+
+.motif-card dd {
+  margin: 3px 0 0;
+  font-size: 14px;
+  line-height: 1.9;
+  color: var(--sumi-soft);
+}
+
+.motif-card__strip {
+  display: grid;
+  grid-template-columns: repeat(12, 1fr);
+  gap: 3px;
+  margin-top: 16px;
+}
+
+.motif-card__strip span {
+  height: 6px;
+  border-radius: 2px;
+}
+
+.notice {
+  border-left: 2px solid var(--kincha);
+  background: var(--kincha-weak);
+  padding: 12px 16px;
+  border-radius: 0 8px 8px 0;
+  font-size: 13.5px;
+  line-height: 1.85;
+  color: var(--sumi-soft);
+  margin-top: 14px;
+}
+
+.notice--tip {
+  border-left-color: var(--ai);
+  background: var(--ai-weak);
+}
+
+/* ── 月セレクタ ── */
+
+.month-select {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  font-size: 13px;
+  color: var(--sumi-soft);
+}
+
+.month-select select {
+  font-family: inherit;
+  font-size: 14px;
+  padding: 7px 12px;
+  border-radius: 8px;
+  border: 1px solid var(--rule-strong);
+  background: var(--paper);
+  color: var(--sumi);
+}
+
+/* ── 文様一覧(手動選択) ── */
+
+.picker__filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: 14px;
+}
+
+.chip {
+  padding: 6px 14px;
+  border-radius: 999px;
+  border: 1px solid var(--rule-strong);
+  background: var(--paper);
+  color: var(--sumi-soft);
+  font-size: 12.5px;
+  letter-spacing: 0.06em;
+}
+
+.chip--on {
+  background: var(--sumi);
+  border-color: var(--sumi);
+  color: var(--paper);
+}
+
+.picker__grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  gap: 8px;
+  max-height: 380px;
+  overflow-y: auto;
+  padding-right: 4px;
+}
+
+.picker__item {
+  text-align: left;
+  padding: 11px 14px;
+  border-radius: 10px;
+  border: 1px solid var(--rule);
+  background: var(--paper);
+  line-height: 1.5;
+}
+
+.picker__item--on {
+  border-color: var(--ai);
+  background: var(--ai-weak);
+}
+
+.picker__item b {
+  font-family: var(--mincho);
+  font-size: 15px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  display: block;
+}
+
+.picker__item small {
+  font-size: 11.5px;
+  color: var(--muted);
+}
+
+/* ── エラー ── */
+
+.error {
+  border-left: 2px solid var(--enji);
+  background: var(--enji-weak);
+  color: #7d3b42;
+  padding: 12px 16px;
+  border-radius: 0 8px 8px 0;
+  font-size: 13.5px;
+  margin-top: 14px;
+}
+
+/* ── フッター ── */
+
+.foot {
+  text-align: center;
+  color: var(--muted);
+  font-size: 11.5px;
+  line-height: 1.9;
+  padding-top: 34px;
+  border-top: 1px solid var(--rule);
+  margin-top: 40px;
+}
+
+.foot__brand {
+  font-family: var(--mincho);
+  letter-spacing: 0.2em;
+  color: var(--sumi-soft);
+}
+
+/* ── モーション設定の尊重 ── */
+
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation-duration: 0.001ms !important;
+    transition-duration: 0.001ms !important;
+  }
+}
+
+@media (max-width: 480px) {
+  .app {
+    padding: 0 14px 72px;
+  }
+  .panel,
+  .motif-card {
+    padding: 18px 16px;
+  }
+  .heatmap {
+    grid-template-columns: repeat(6, 1fr);
+    gap: 5px;
+  }
+}
