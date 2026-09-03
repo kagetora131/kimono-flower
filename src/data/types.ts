@@ -13,13 +13,29 @@ export type Month = number
 /** ある月にその文様を着ることの適性。 */
 export type Fitness = 'best' | 'good' | 'caution' | 'avoid'
 
+export type Lang = 'ja' | 'en'
+
+/** 言語ごとに用意する、文様の説明文。 */
+export interface MotifText {
+  /** 「春(3〜4月)」のような、象徴する季節の短い表示。 */
+  season: string
+  /** 意味・由来。 */
+  meaning: string
+  /** 着こなしの注意や豆知識。 */
+  note: string
+  /** TPO 上の注意(慶弔・場面)。該当するものだけ。 */
+  taboo?: string
+}
+
 export interface Motif {
   id: string
   /** 和名 */
   nameJa: string
   /** 読み(ふりがな) */
   reading: string
-  /** 英名。インバウンド向け表示と CLIP プロンプトの下地を兼ねる。 */
+  /** ローマ字表記。英語表示で和名に添える。 */
+  romaji: string
+  /** 英名。 */
   nameEn: string
   category: MotifCategory
 
@@ -42,14 +58,8 @@ export interface Motif {
    */
   stylizedYearRound: boolean
 
-  /** 「春(3〜4月)」のような、象徴する季節の短い表示。 */
-  season: string
-  /** 意味・由来。 */
-  meaning: string
-  /** 着こなしの注意や豆知識。 */
-  note: string
-  /** TPO 上の注意(慶弔・場面)。該当するものだけ。 */
-  taboo?: string
+  /** 言語ごとの説明文。 */
+  text: Record<Lang, MotifText>
 
   /** ブラウザ内 CLIP のゼロショット判定に使う英語プロンプト。 */
   prompts: string[]

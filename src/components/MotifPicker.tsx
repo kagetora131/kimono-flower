@@ -1,15 +1,16 @@
 import { useMemo, useState } from 'react'
 import { MOTIFS } from '../data/motifs'
-import type { MotifCategory } from '../data/types'
+import type { Lang, MotifCategory } from '../data/types'
+import { t } from '../i18n/strings'
 
-const CATEGORY_LABEL: Record<MotifCategory | 'all', string> = {
-  all: 'すべて',
-  flower: '花',
-  plant: '草木',
-  nature: '自然',
-  auspicious: '吉祥・器物',
-  creature: '生き物',
-  geometric: '幾何',
+const CATEGORY_KEY: Record<MotifCategory | 'all', Parameters<typeof t>[1]> = {
+  all: 'filterAll',
+  flower: 'catFlower',
+  plant: 'catPlant',
+  nature: 'catNature',
+  auspicious: 'catAuspicious',
+  creature: 'catCreature',
+  geometric: 'catGeometric',
 }
 
 const ORDER: (MotifCategory | 'all')[] = [
@@ -25,9 +26,10 @@ const ORDER: (MotifCategory | 'all')[] = [
 interface Props {
   selected: string[]
   onToggle: (motifId: string) => void
+  lang: Lang
 }
 
-export function MotifPicker({ selected, onToggle }: Props) {
+export function MotifPicker({ selected, onToggle, lang }: Props) {
   const [filter, setFilter] = useState<MotifCategory | 'all'>('all')
 
   const list = useMemo(
@@ -45,7 +47,7 @@ export function MotifPicker({ selected, onToggle }: Props) {
             className={`chip${filter === key ? ' chip--on' : ''}`}
             onClick={() => setFilter(key)}
           >
-            {CATEGORY_LABEL[key]}
+            {t(lang, CATEGORY_KEY[key])}
           </button>
         ))}
       </div>
@@ -61,8 +63,8 @@ export function MotifPicker({ selected, onToggle }: Props) {
               aria-pressed={on}
               onClick={() => onToggle(motif.id)}
             >
-              <b>{motif.nameJa}</b>
-              <small>{motif.season}</small>
+              <b>{lang === 'en' ? motif.nameEn : motif.nameJa}</b>
+              <small>{motif.text[lang].season}</small>
             </button>
           )
         })}

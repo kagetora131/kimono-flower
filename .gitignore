@@ -6,3 +6,6 @@ dist
 .vercel
 .DS_Store
 .claude/settings.local.json
+
+# テスト用の着物写真(個人の私物のため公開リポジトリに含めない)
+着物ダミーデータ/

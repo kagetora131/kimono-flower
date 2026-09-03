@@ -78,6 +78,32 @@ button {
   text-align: center;
 }
 
+.lang-toggle {
+  display: inline-flex;
+  gap: 2px;
+  padding: 3px;
+  border-radius: 999px;
+  border: 1px solid var(--rule-strong);
+  background: var(--paper-sub);
+  margin-bottom: 22px;
+}
+
+.lang-toggle__btn {
+  border: none;
+  background: transparent;
+  color: var(--sumi-soft);
+  font-size: 12px;
+  letter-spacing: 0.04em;
+  padding: 6px 14px;
+  border-radius: 999px;
+  transition: background-color 0.16s ease, color 0.16s ease;
+}
+
+.lang-toggle__btn--on {
+  background: var(--sumi);
+  color: var(--paper);
+}
+
 .masthead__title {
   font-family: var(--mincho);
   font-size: clamp(30px, 7vw, 40px);

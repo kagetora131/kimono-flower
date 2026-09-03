@@ -1,12 +1,15 @@
 import { useCallback, useRef, useState } from 'react'
+import type { Lang } from '../data/types'
+import { t } from '../i18n/strings'
 
 interface Props {
   imageUrl: string | null
   onPick: (file: File) => void
   onClear: () => void
+  lang: Lang
 }
 
-export function ImagePicker({ imageUrl, onPick, onClear }: Props) {
+export function ImagePicker({ imageUrl, onPick, onClear, lang }: Props) {
   const fileRef = useRef<HTMLInputElement>(null)
   const cameraRef = useRef<HTMLInputElement>(null)
   const [dragging, setDragging] = useState(false)
@@ -23,11 +26,11 @@ export function ImagePicker({ imageUrl, onPick, onClear }: Props) {
     return (
       <div>
         <div className="preview">
-          <img src={imageUrl} alt="読み込んだ着物の写真" />
+          <img src={imageUrl} alt={lang === 'en' ? 'The kimono photo you loaded' : '読み込んだ着物の写真'} />
         </div>
         <div className="btn-row" style={{ marginTop: 14 }}>
           <button type="button" className="btn btn--quiet" onClick={onClear}>
-            写真を選び直す
+            {t(lang, 'btnReselect')}
           </button>
         </div>
       </div>
@@ -49,17 +52,17 @@ export function ImagePicker({ imageUrl, onPick, onClear }: Props) {
           handleFiles(e.dataTransfer.files)
         }}
       >
-        着物・帯の写真をここにドラッグするか、下のボタンから選んでください
+        {t(lang, 'dropzone')}
         <br />
-        柄がはっきり写るよう、寄りで撮ると精度が上がります
+        {t(lang, 'dropzoneSub')}
       </div>
 
       <div className="btn-row" style={{ marginTop: 16 }}>
         <button type="button" className="btn btn--primary" onClick={() => cameraRef.current?.click()}>
-          カメラで撮る
+          {t(lang, 'btnCamera')}
         </button>
         <button type="button" className="btn btn--quiet" onClick={() => fileRef.current?.click()}>
-          画像を選ぶ
+          {t(lang, 'btnChooseImage')}
         </button>
       </div>
 

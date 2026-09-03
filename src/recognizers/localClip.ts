@@ -106,7 +106,9 @@ async function buildEngine(onProgress?: (p: LoadProgress) => void): Promise<Engi
     }
     onProgress({
       ratio: total > 0 ? Math.min(loaded / total, 1) : 0,
-      message: `AIモデルを取得しています（${formatMb(loaded)} / ${formatMb(total)}）`,
+      phase: 'downloading',
+      loadedBytes: loaded,
+      totalBytes: total,
     })
   }
 
@@ -125,7 +127,7 @@ async function buildEngine(onProgress?: (p: LoadProgress) => void): Promise<Engi
     CLIPVisionModelWithProjection.from_pretrained(MODEL_ID, modelOpts),
   ])
 
-  onProgress?.({ ratio: 1, message: '文様の辞書を作っています' })
+  onProgress?.({ ratio: 1, phase: 'indexing' })
 
   // 文埋め込みは文様マスタが変わらない限り不変なので、ここで一度だけ計算する。
   const textInputs = tokenizer(CANDIDATE_LABELS, { padding: true, truncation: true })
@@ -136,10 +138,6 @@ async function buildEngine(onProgress?: (p: LoadProgress) => void): Promise<Engi
   return { processor, visionModel, textEmbeds, RawImage }
 }
 
-function formatMb(bytes: number): string {
-  return `${(bytes / 1024 / 1024).toFixed(0)}MB`
-}
-
 function judgeConfidence(margin: number): Confidence {
   if (margin >= MARGIN_HIGH) return 'high'
   if (margin >= MARGIN_MEDIUM) return 'medium'
@@ -148,9 +146,6 @@ function judgeConfidence(margin: number): Confidence {
 
 export const localClipRecognizer: Recognizer = {
   id: 'local-clip',
-  label: '端末内AI',
-  setupNote:
-    '初回のみ約150MBのAIモデルを読み込みます。以降はブラウザに保存され、二回目からはすぐに判定できます。画像が端末の外に送られることはありません。',
 
   async prepare(onProgress) {
     if (!enginePromise) {

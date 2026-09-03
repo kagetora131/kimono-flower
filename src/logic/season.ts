@@ -1,9 +1,9 @@
 import { MOTIF_BY_ID } from '../data/motifs'
-import type { Fitness, Month, Motif } from '../data/types'
+import type { Fitness, Lang, Month, Motif } from '../data/types'
 
 export const MONTHS: Month[] = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]
 
-/** 和風月名。結果表示に季節感を添えるために使う。 */
+/** 和風月名。結果表示に季節感を添えるために使う。日本語モードでのみ表示する。 */
 export const MONTH_NAMES_JA = [
   '睦月',
   '如月',
@@ -26,11 +26,19 @@ const FITNESS_SCORE: Record<Fitness, number> = {
   avoid: 0,
 }
 
-export const FITNESS_LABEL: Record<Fitness, string> = {
-  best: '最適',
-  good: '着られる',
-  caution: '時季外れ',
-  avoid: '避けたい',
+export const FITNESS_LABEL: Record<Lang, Record<Fitness, string>> = {
+  ja: {
+    best: '最適',
+    good: '着られる',
+    caution: '時季外れ',
+    avoid: '避けたい',
+  },
+  en: {
+    best: 'Ideal',
+    good: 'Wearable',
+    caution: 'Off-season',
+    avoid: 'Avoid',
+  },
 }
 
 export const FITNESS_MARK: Record<Fitness, string> = {
@@ -104,7 +112,7 @@ function scoreToFitness(score: number): Fitness {
   return 'avoid'
 }
 
-function listMonths(months: Month[]): string {
+function listMonths(months: Month[], lang: Lang): string {
   if (months.length === 0) return ''
   // 連続する月は「3〜5月」のように範囲でまとめる。12月→1月の折り返しも扱う。
   const sorted = [...months].sort((a, b) => a - b)
@@ -123,16 +131,53 @@ function listMonths(months: Month[]): string {
       runs.push([m])
     }
   }
+
+  if (lang === 'en') {
+    const MONTH_ABBR = [
+      'Jan',
+      'Feb',
+      'Mar',
+      'Apr',
+      'May',
+      'Jun',
+      'Jul',
+      'Aug',
+      'Sep',
+      'Oct',
+      'Nov',
+      'Dec',
+    ]
+    return runs
+      .map((run) =>
+        run.length === 1
+          ? MONTH_ABBR[run[0] - 1]
+          : `${MONTH_ABBR[run[0] - 1]}–${MONTH_ABBR[run[run.length - 1] - 1]}`,
+      )
+      .join(', ')
+  }
+
   return runs
     .map((run) => (run.length === 1 ? `${run[0]}月` : `${run[0]}〜${run[run.length - 1]}月`))
     .join('・')
 }
 
-const HEADLINES: Record<Fitness, string> = {
-  best: '今が着どきです',
-  good: '着ても差し支えありません',
-  caution: '少し時季を外しています',
-  avoid: 'この時季は避けたい柄です',
+const HEADLINES: Record<Lang, Record<Fitness, string>> = {
+  ja: {
+    best: '今が着どきです',
+    good: '着ても差し支えありません',
+    caution: '少し時季を外しています',
+    avoid: 'この時季は避けたい柄です',
+  },
+  en: {
+    best: 'This is the season to wear it',
+    good: 'Fine to wear now',
+    caution: 'A little out of season',
+    avoid: "Best avoided this month",
+  },
+}
+
+function motifName(motif: Motif, lang: Lang): string {
+  return lang === 'en' ? motif.nameEn : motif.nameJa
 }
 
 /**
@@ -144,7 +189,7 @@ const HEADLINES: Record<Fitness, string> = {
  *   含まれていれば、その月は避けたほうがよいという考え方による。
  * - 通年文様(七宝・鶴など)は月の判定に影響させず、別枠で表示する。
  */
-export function buildVerdict(motifIds: string[], targetMonth: Month): Verdict | null {
+export function buildVerdict(motifIds: string[], targetMonth: Month, lang: Lang): Verdict | null {
   const motifs = motifIds
     .map((id) => MOTIF_BY_ID.get(id))
     .filter((m): m is Motif => m !== undefined)
@@ -171,7 +216,7 @@ export function buildVerdict(motifIds: string[], targetMonth: Month): Verdict | 
   const goodMonths = months.filter((m) => m.fitness === 'good').map((m) => m.month)
   const targetFitness = months[targetMonth - 1].fitness
 
-  const names = motifs.map((m) => m.nameJa).join('・')
+  const names = motifs.map((m) => motifName(m, lang)).join(lang === 'en' ? ' and ' : '・')
   const wearable = bestMonths.length > 0 ? bestMonths : goodMonths
 
   // 季節の異なる柄が同居していると、どの月も条件を満たさなくなる。
@@ -179,37 +224,63 @@ export function buildVerdict(motifIds: string[], targetMonth: Month): Verdict | 
   // 意匠が存在するため、時季外れとして片づけずに別枠で説明する。
   const conflict = seasonalProfiles.length > 1 && wearable.length === 0
 
-  let headline = HEADLINES[targetFitness]
+  let headline = HEADLINES[lang][targetFitness]
   let detail: string
 
   if (conflict) {
     const each = seasonalProfiles
       .map((p) => {
         const own = p.motif.wearBest.length > 0 ? p.motif.wearBest : p.motif.wearGood
-        return `${p.motif.nameJa}(${listMonths(own)})`
+        return `${motifName(p.motif, lang)}(${listMonths(own, lang)})`
       })
-      .join('と')
-    headline = '季節をまたぐ取り合わせです'
-    detail = `${each}は着どきが重なりません。ただし着物には、桜と楓を組み合わせた「桜楓」のように、あえて季節をまたいで取り合わせた意匠があり、これらは季節を問わず着られるものとして扱われます。ひとつの絵柄としてまとまっているなら通年の柄、別々の柄が並んでいるだけなら、それぞれの時季に合わせて選ぶとよいでしょう。`
+      .join(lang === 'en' ? ' and ' : 'と')
+
+    if (lang === 'en') {
+      headline = 'A cross-season pairing'
+      detail = `${each} don't share a wearing season. That said, kimono do include designs that deliberately span seasons — such as "oh-fu," which combines cherry blossoms and maple leaves — and these are treated as year-round. If this reads as one unified design, treat it as a year-round motif; if the motifs appear as separate, distinct patterns, it's better to choose based on each one's own season.`
+    } else {
+      headline = '季節をまたぐ取り合わせです'
+      detail = `${each}は着どきが重なりません。ただし着物には、桜と楓を組み合わせた「桜楓」のように、あえて季節をまたいで取り合わせた意匠があり、これらは季節を問わず着られるものとして扱われます。ひとつの絵柄としてまとまっているなら通年の柄、別々の柄が並んでいるだけなら、それぞれの時季に合わせて選ぶとよいでしょう。`
+    }
   } else if (seasonalProfiles.length === 0) {
-    // 「いずれも」は柄が複数あるときだけ付ける。単独の柄に使うと日本語として不自然になる。
-    const all = motifs.length > 1 ? 'はいずれも' : 'は'
-    detail = `${names}${all}季節を選ばない文様です。${targetMonth}月に限らず、一年を通して着られます。`
+    if (lang === 'en') {
+      const all = motifs.length > 1 ? 'are all' : 'is'
+      detail = `${names} ${all} a year-round motif. It can be worn in ${listMonths([targetMonth], lang)} or any other month.`
+    } else {
+      const all = motifs.length > 1 ? 'はいずれも' : 'は'
+      detail = `${names}${all}季節を選ばない文様です。${targetMonth}月に限らず、一年を通して着られます。`
+    }
   } else if (targetFitness === 'best') {
-    detail = `${targetMonth}月は${names}が最も映える時季です。着物の柄は実際の盛りより少し早く着るのが粋とされ、今がちょうどその頃合いにあたります。`
-  } else if (targetFitness === 'good') {
     detail =
-      bestMonths.length > 0
-        ? `${targetMonth}月に${names}を着ることに差し支えはありません。最も映えるのは${listMonths(bestMonths)}頃です。`
-        : `${targetMonth}月に${names}を着ることに差し支えはありません。`
+      lang === 'en'
+        ? `${listMonths([targetMonth], lang)} is when ${names} looks its best. Kimono are traditionally worn a little ahead of a flower's actual peak, so now is right on cue.`
+        : `${targetMonth}月は${names}が最も映える時季です。着物の柄は実際の盛りより少し早く着るのが粋とされ、今がちょうどその頃合いにあたります。`
+  } else if (targetFitness === 'good') {
+    if (lang === 'en') {
+      detail =
+        bestMonths.length > 0
+          ? `There's no issue wearing ${names} in ${listMonths([targetMonth], lang)}. It looks best around ${listMonths(bestMonths, lang)}.`
+          : `There's no issue wearing ${names} in ${listMonths([targetMonth], lang)}.`
+    } else {
+      detail =
+        bestMonths.length > 0
+          ? `${targetMonth}月に${names}を着ることに差し支えはありません。最も映えるのは${listMonths(bestMonths, lang)}頃です。`
+          : `${targetMonth}月に${names}を着ることに差し支えはありません。`
+    }
   } else if (targetFitness === 'caution') {
-    detail = `${names}は${listMonths(wearable)}の柄です。${targetMonth}月は時季から外れるため、季節感を大切にするなら控えたほうが無難です。`
+    detail =
+      lang === 'en'
+        ? `${names} is a motif for ${listMonths(wearable, lang)}. ${listMonths([targetMonth], lang)} falls outside that window, so if you want to keep the seasonal feel accurate, it's best to hold off.`
+        : `${names}は${listMonths(wearable, lang)}の柄です。${targetMonth}月は時季から外れるため、季節感を大切にするなら控えたほうが無難です。`
   } else {
-    const avoiding = seasonalProfiles
-      .filter((p) => p.motif.wearAvoid.includes(targetMonth))
-      .map((p) => p.motif.nameJa)
-      .join('・')
-    detail = `${avoiding}は盛りを過ぎた時季にあたります。着物では盛りを過ぎた花を着るのは避けるものとされているため、${targetMonth}月は控え、${listMonths(wearable)}まで待つのがふさわしいでしょう。`
+    const avoidingMotifs = seasonalProfiles.filter((p) => p.motif.wearAvoid.includes(targetMonth))
+    const avoiding = avoidingMotifs
+      .map((p) => motifName(p.motif, lang))
+      .join(lang === 'en' ? ' and ' : '・')
+    detail =
+      lang === 'en'
+        ? `${avoiding} ${avoidingMotifs.length > 1 ? 'are' : 'is'} past its season now. In kimono tradition, wearing a flower after it has passed its peak is considered poor form, so it's best to wait until ${listMonths(wearable, lang)}.`
+        : `${avoiding}は盛りを過ぎた時季にあたります。着物では盛りを過ぎた花を着るのは避けるものとされているため、${targetMonth}月は控え、${listMonths(wearable, lang)}まで待つのがふさわしいでしょう。`
   }
 
   const stylizedExceptions = seasonalProfiles
@@ -217,8 +288,8 @@ export function buildVerdict(motifIds: string[], targetMonth: Month): Verdict | 
     .map((p) => p.motif)
 
   const cautions = motifs
-    .filter((m) => m.taboo)
-    .map((m) => ({ motif: m, text: m.taboo as string }))
+    .filter((m) => m.text[lang].taboo)
+    .map((m) => ({ motif: m, text: m.text[lang].taboo as string }))
 
   return {
     targetMonth,

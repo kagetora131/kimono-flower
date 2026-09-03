@@ -30,18 +30,22 @@ export interface RecognitionResult {
   diagnostics: { topSimilarity: number; margin: number }
 }
 
+/**
+ * 進捗の説明は言語ごとの文言をここに持たせず、フェーズとバイト数だけを
+ * 渡す。文言化は呼び出し側(UI)の言語設定に任せる。
+ */
+export type LoadPhase = 'downloading' | 'indexing'
+
 export interface LoadProgress {
   /** 0〜1。ファイル取得の進捗。 */
   ratio: number
-  /** 進捗の説明(「モデルを取得しています」など)。 */
-  message: string
+  phase: LoadPhase
+  loadedBytes?: number
+  totalBytes?: number
 }
 
 export interface Recognizer {
   id: string
-  label: string
-  /** 利用開始前に必要な準備(モデルのダウンロード等)の説明。不要なら null。 */
-  setupNote: string | null
   /** モデルの読み込み。すでに読み込み済みなら即座に解決する。 */
   prepare(onProgress?: (p: LoadProgress) => void): Promise<void>
   /** 画像(オブジェクトURL または data URL)から文様候補を返す。 */
