@@ -34,6 +34,14 @@ const MONTH_ABBR_EN = [
 const LANG_STORAGE_KEY = 'hana-awase:lang'
 
 function detectInitialLang(): Lang {
+  // URLに ?lang=ja / ?lang=en があれば最優先(ホームページの表示言語のまま
+  // アプリを開けるようにするため)。
+  try {
+    const urlLang = new URLSearchParams(window.location.search).get('lang')
+    if (urlLang === 'ja' || urlLang === 'en') return urlLang
+  } catch {
+    // ignore
+  }
   try {
     const saved = localStorage.getItem(LANG_STORAGE_KEY)
     if (saved === 'ja' || saved === 'en') return saved
@@ -79,6 +87,19 @@ export default function App() {
       // 保存できなくても表示自体は問題なく続けられる。
     }
   }, [lang])
+
+  // ?lang= で開かれた場合、初期表示には反映済みなのでURLからは消しておく。
+  useEffect(() => {
+    try {
+      const url = new URL(window.location.href)
+      if (url.searchParams.has('lang')) {
+        url.searchParams.delete('lang')
+        window.history.replaceState(null, '', url.pathname + url.search + url.hash)
+      }
+    } catch {
+      // ignore
+    }
+  }, [])
 
   // 生成した object URL は差し替え・破棄のたびに解放する。
   useEffect(() => {
