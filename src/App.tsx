@@ -48,6 +48,14 @@ function detectInitialLang(): Lang {
   } catch {
     // localStorage が使えない環境ではブラウザの言語設定にフォールバックする。
   }
+  // このアプリでの選択が無ければ、ホームページの表示言語(同一オリジンの
+  // localStorageを共有)を端末の言語設定より優先する。
+  try {
+    const hpLang = localStorage.getItem('kagetora-lang')
+    if (hpLang === 'ja' || hpLang === 'en') return hpLang
+  } catch {
+    // ignore
+  }
   return navigator.language.toLowerCase().startsWith('ja') ? 'ja' : 'en'
 }
 
